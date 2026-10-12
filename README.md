@@ -48,7 +48,7 @@ The project uses a decoupled architecture, with the frontend and backend maintai
 
 ### Reservations & User Dashboard
 
-- As a registered user who is logged in, select a class to reserve and open a booking form with your username or email address and phone number pre-filled.
+- As a registered user who is logged in, select a class to reserve and open a booking form with your email address and phone number pre-filled.
 - Provide tea or kombucha preferences when booking a Kombucha & Tea Lounge session. These preferences are required before confirming the booking.
 - Confirm a reservation and return to the dashboard.
 - View personal reservations, including their status, notes, date, host, and location.
