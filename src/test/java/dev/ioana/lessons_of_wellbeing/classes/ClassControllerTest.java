@@ -43,7 +43,8 @@ class ClassControllerTest {
             90,
             new ClassDTOResponse.CategoryResponse(1L, CategoryName.YOGA),
             new ClassDTOResponse.GuideResponse(3L, "Leo"),
-            List.of(new ClassDTOResponse.HostResponse(2L, "Thor"))
+            List.of(new ClassDTOResponse.HostResponse(2L, "Thor")),
+            List.of("Thor's Spark Ginger Citrus Kombucha")
         );
         when(classService.getUpcomingClasses()).thenReturn(List.of(response));
 
@@ -59,7 +60,8 @@ class ClassControllerTest {
             .andExpect(jsonPath("$[0].durationMinutes").value(90))
             .andExpect(jsonPath("$[0].category.name").value("YOGA"))
             .andExpect(jsonPath("$[0].guide.name").value("Leo"))
-            .andExpect(jsonPath("$[0].hosts[0].name").value("Thor"));
+            .andExpect(jsonPath("$[0].hosts[0].name").value("Thor"))
+            .andExpect(jsonPath("$[0].drinks[0]").value("Thor's Spark Ginger Citrus Kombucha"));
     }
 
     @Test
