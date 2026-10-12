@@ -56,6 +56,28 @@ class ClassMapperTest {
         assertThat(response.hosts()).isEmpty();
     }
 
+    @Test
+    void toResponse_returnsAllDrinksForKombuchaTeaLoungeClasses() {
+        ClassEntity classEntity = createClass();
+        classEntity.getCategory().setName(CategoryName.KOMBUCHA_TEA_LOUNGE);
+
+        ClassDTOResponse response = classMapper.toResponse(classEntity);
+
+        assertThat(response.drinks()).containsExactly(
+            "Queen Mia's Royal Chamomile Lavender",
+            "Thor's Spark Ginger Citrus Kombucha",
+            "Feline Golden Milk & Cardamom Chai",
+            "Hibiscus Rose Sparkle Kombucha"
+        );
+    }
+
+    @Test
+    void toResponse_returnsEmptyDrinkListForOtherCategories() {
+        ClassDTOResponse response = classMapper.toResponse(createClass());
+
+        assertThat(response.drinks()).isEmpty();
+    }
+
     private ClassEntity createClass() {
         CategoryEntity category = new CategoryEntity();
         ReflectionTestUtils.setField(category, "id", 1L);
