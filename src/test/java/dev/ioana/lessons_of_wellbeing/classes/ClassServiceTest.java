@@ -74,6 +74,6 @@ class ClassServiceTest {
     }
 
     private ClassDTOResponse createResponse(Long id) {
-        return new ClassDTOResponse(id, "Title " + id, null, null, null, null, 60, null, null, List.of());
+        return new ClassDTOResponse(id, "Title " + id, null, null, null, null, 60, null, null, List.of(), List.of());
     }
 }

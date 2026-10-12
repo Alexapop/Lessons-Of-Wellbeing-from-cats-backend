@@ -8,6 +8,8 @@ import org.springframework.stereotype.Component;
 import dev.ioana.lessons_of_wellbeing.category.CategoryEntity;
 import dev.ioana.lessons_of_wellbeing.classes.ClassEntity;
 import dev.ioana.lessons_of_wellbeing.classes.dtos.ClassDTOResponse;
+import dev.ioana.lessons_of_wellbeing.enums.CategoryName;
+import dev.ioana.lessons_of_wellbeing.enums.Drink;
 import dev.ioana.lessons_of_wellbeing.guide.GuideEntity;
 import dev.ioana.lessons_of_wellbeing.host.HostEntity;
 
@@ -44,6 +46,14 @@ public class ClassMapper {
 
         hostResponses.sort((firstHost, secondHost) -> firstHost.id().compareTo(secondHost.id()));
 
+        List<String> drinks = new ArrayList<>();
+
+        if (category.getName() == CategoryName.KOMBUCHA_TEA_LOUNGE) {
+            for (Drink drink : Drink.values()) {
+                drinks.add(drink.getDisplayName());
+            }
+        }
+
         return new ClassDTOResponse(
             classEntity.getId(),
             classEntity.getTitle(),
@@ -54,7 +64,8 @@ public class ClassMapper {
             classEntity.getDurationMinutes(),
             categoryResponse,
             guideResponse,
-            hostResponses
+            hostResponses,
+            drinks
         );
     }
 }

@@ -16,7 +16,8 @@ public record ClassDTOResponse(
     int durationMinutes,
     CategoryResponse category,
     GuideResponse guide,
-    List <HostResponse> hosts
+    List <HostResponse> hosts,
+    List <String> drinks
 ) {
 
     public record CategoryResponse(
