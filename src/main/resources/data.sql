@@ -17,28 +17,28 @@ INSERT INTO hosts (name) VALUES ('Thor');
 
 -- Classes
 INSERT INTO classes (title, description, level, location, start_date_time, duration_minutes, category_id, guide_id)
-VALUES ('Queen Mia Restorative Cat Nap Yoga & Pranayama', 'Slow-paced restorative yoga supported by bolsters, with deep breathing, hip openers, and quiet contemplation alongside Queen Mia.', 'GENTLE_RESTORATIVE', 'The Velvet Sun Lounge (Main Hall)', '2026-10-09 07:30:00', 75, 1, 1);
+VALUES ('Queen Mia Restorative Cat Nap Yoga & Pranayama', 'Slow-paced restorative yoga supported by bolsters, with deep breathing, hip openers, and quiet contemplation alongside Queen Mia.', 'GENTLE_RESTORATIVE', 'The Velvet Sun Lounge (Main Hall)', '2026-10-30 07:30:00', 75, 1, 1);
 
 INSERT INTO classes (title, description, level, location, start_date_time, duration_minutes, category_id, guide_id)
-VALUES ('Kombucha Tea Tasting & Cat Meet & Greet', 'Enjoy homemade kombuchas and aromatic botanical teas while spending a relaxing afternoon with Mia and Thor.', 'ALL_LEVELS', 'The Garden Tea & Kombucha Lounge', '2026-10-09 16:30:00', 90, 3, 2);
+VALUES ('Kombucha Tea Tasting & Cat Meet & Greet', 'Enjoy homemade kombuchas and aromatic botanical teas while spending a relaxing afternoon with Mia and Thor.', 'ALL_LEVELS', 'The Garden Tea & Kombucha Lounge', '2026-10-29 16:30:00', 90, 3, 2);
 
 INSERT INTO classes (title, description, level, location, start_date_time, duration_minutes, category_id, guide_id)
-VALUES ('Thor’s Morning Feline Flow & Cat-Cow Vinyasa', 'A playful yoga sequence inspired by cat movements, with fluid spinal waves, warrior stretches, and energetic balance.', 'ENERGETIC_FLOW', 'Sunbeam Studio', '2026-10-10 07:45:00', 75, 1, 3);
+VALUES ('Thor’s Morning Feline Flow & Cat-Cow Vinyasa', 'A playful yoga sequence inspired by cat movements, with fluid spinal waves, warrior stretches, and energetic balance.', 'ENERGETIC_FLOW', 'Sunbeam Studio', '2026-10-29 07:45:00', 75, 1, 3);
 
 INSERT INTO classes (title, description, level, location, start_date_time, duration_minutes, category_id, guide_id)
-VALUES ('Ayurveda & Feline Self-Care Workshop', 'Explore Ayurvedic traditions and gentle daily self-care rituals, including massage, herbal teas, and seasonal routines.', 'ALL_LEVELS', 'Ayurveda Wisdom Room', '2026-10-10 17:00:00', 90, 2, 4);
+VALUES ('Ayurveda & Feline Self-Care Workshop', 'Explore Ayurvedic traditions and gentle daily self-care rituals, including massage, herbal teas, and seasonal routines.', 'ALL_LEVELS', 'Ayurveda Wisdom Room', '2026-10-30 17:00:00', 90, 2, 4);
 
 INSERT INTO classes (title, description, level, location, start_date_time, duration_minutes, category_id, guide_id)
-VALUES ('Sunset Yin Yoga & Purr Sound Bath', 'Long-held Yin stretches accompanied by singing bowls and cat purring for a calm transition into the evening.', 'GENTLE_RESTORATIVE', 'The Velvet Sun Lounge', '2026-10-12 18:30:00', 75, 1, 5);
+VALUES ('Sunset Yin Yoga & Purr Sound Bath', 'Long-held Yin stretches accompanied by singing bowls and cat purring for a calm transition into the evening.', 'GENTLE_RESTORATIVE', 'The Velvet Sun Lounge', '2026-10-30 18:30:00', 75, 1, 5);
 
 INSERT INTO classes (title, description, level, location, start_date_time, duration_minutes, category_id, guide_id)
-VALUES ('Evening Kombucha, Golden Milk & Tea Lounge Session', 'Relax with warm golden milk or seasonal kombucha, read a wellbeing book, and enjoy the company of Mia and Thor.', 'ALL_LEVELS', 'The Garden Tea & Kombucha Lounge', '2026-10-12 19:30:00', 90, 3, 6);
+VALUES ('Evening Kombucha, Golden Milk & Tea Lounge Session', 'Relax with warm golden milk or seasonal kombucha, read a wellbeing book, and enjoy the company of Mia and Thor.', 'ALL_LEVELS', 'The Garden Tea & Kombucha Lounge', '2026-10-30 19:30:00', 90, 3, 6);
 
 INSERT INTO classes (title, description, level, location, start_date_time, duration_minutes, category_id, guide_id)
-VALUES ('Weekend Thor Playful Partner Yoga & Agility', 'Partner and solo yoga poses exploring balance, laughter, and playful movement, with Thor watching the humans stretch.', 'BEGINNERS', 'Sunbeam Studio', '2026-10-13 07:30:00', 90, 1, 3);
+VALUES ('Weekend Thor Playful Partner Yoga & Agility', 'Partner and solo yoga poses exploring balance, laughter, and playful movement, with Thor watching the humans stretch.', 'BEGINNERS', 'Sunbeam Studio', '2026-10-31 07:30:00', 90, 1, 3);
 
 INSERT INTO classes (title, description, level, location, start_date_time, duration_minutes, category_id, guide_id)
-VALUES ('Ayurvedic Tea Blending & Mindful Sip Masterclass', 'Create a botanical tea blend with guidance from the tea artisan and enjoy a mindful tasting supervised by Queen Mia.', 'ALL_LEVELS', 'Ayurveda Wisdom Room', '2026-10-14 18:00:00', 90, 2, 2);
+VALUES ('Ayurvedic Tea Blending & Mindful Sip Masterclass', 'Create a botanical tea blend with guidance from the tea artisan and enjoy a mindful tasting supervised by Queen Mia.', 'ALL_LEVELS', 'Ayurveda Wisdom Room', '2026-10-31 18:00:00', 90, 2, 2);
 
 -- Which cat hosts which class (1 = Mia, 2 = Thor)
 INSERT INTO class_host (class_id, host_id) VALUES (1, 1);
