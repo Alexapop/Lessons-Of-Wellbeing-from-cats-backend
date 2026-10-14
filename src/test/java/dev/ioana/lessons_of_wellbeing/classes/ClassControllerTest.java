@@ -25,6 +25,8 @@ import dev.ioana.lessons_of_wellbeing.security.SecurityConfiguration;
 @WebMvcTest(ClassController.class)
 @Import(SecurityConfiguration.class)
 class ClassControllerTest {
+    @MockitoBean
+    private org.springframework.security.oauth2.jwt.JwtDecoder jwtDecoder;
     @Autowired
     private MockMvc mockMvc;
 
@@ -74,8 +76,8 @@ class ClassControllerTest {
     }
 
     @Test
-    void createSession_isForbiddenWithoutLogin() throws Exception {
+    void createSession_isUnauthorizedWithoutLogin() throws Exception {
         mockMvc.perform(post("/api/v1/sessions"))
-            .andExpect(status().isForbidden());
+            .andExpect(status().isUnauthorized());
     }
 }
