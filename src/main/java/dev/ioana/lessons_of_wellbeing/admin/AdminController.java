@@ -2,13 +2,21 @@ package dev.ioana.lessons_of_wellbeing.admin;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import dev.ioana.lessons_of_wellbeing.admin.dtos.AdminBookingDTOResponse;
 import dev.ioana.lessons_of_wellbeing.admin.dtos.AdminDashboardDTOResponse;
+import dev.ioana.lessons_of_wellbeing.admin.dtos.CreateSessionDTORequest;
+import dev.ioana.lessons_of_wellbeing.admin.dtos.SessionOptionsDTOResponse;
+import dev.ioana.lessons_of_wellbeing.classes.dtos.ClassDTOResponse;
 import dev.ioana.lessons_of_wellbeing.contracts.IAdminService;
+import jakarta.validation.Valid;
 
 // Every /admin endpoint requires ROLE_ADMIN (see SecurityConfiguration).
 @RestController
@@ -29,5 +37,16 @@ public class AdminController {
     @GetMapping("/bookings")
     public List<AdminBookingDTOResponse> getAllBookings() {
         return adminService.getAllBookings();
+    }
+
+    // Categories, levels, guides and hosts for the session creation form.
+    @GetMapping("/session-options")
+    public SessionOptionsDTOResponse getSessionOptions() {
+        return adminService.getSessionOptions();
+    }
+
+    @PostMapping("/sessions")
+    public ResponseEntity<ClassDTOResponse> createSession(@Valid @RequestBody CreateSessionDTORequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(adminService.createSession(request));
     }
 }
