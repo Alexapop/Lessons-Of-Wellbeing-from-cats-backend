@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.hibernate.annotations.ColumnDefault;
+
 import dev.ioana.lessons_of_wellbeing.category.CategoryEntity;
 import dev.ioana.lessons_of_wellbeing.enums.ClassLevel;
 import dev.ioana.lessons_of_wellbeing.guide.GuideEntity;
@@ -69,5 +71,10 @@ public class ClassEntity {
     inverseJoinColumns = @JoinColumn (name = "host_id")
   )
   private Set <HostEntity> hosts = new HashSet<>();
+
+    // Logical delete: the session is hidden from the calendar but kept for the reservation history.
+    @ColumnDefault("false")
+    @Column(nullable = false)
+    private boolean deleted = false;
 
 }
