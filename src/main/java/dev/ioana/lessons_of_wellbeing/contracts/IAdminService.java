@@ -18,4 +18,6 @@ public interface IAdminService {
     ClassDTOResponse createSession(CreateSessionDTORequest request);
 
     ClassDTOResponse updateSession(Long id, CreateSessionDTORequest request);
+
+    void deleteSession(Long id);
 }

@@ -156,6 +156,17 @@ public class AdminService implements IAdminService {
         return classMapper.toResponse(classRepository.save(classEntity));
     }
 
+    @Override
+    @Transactional
+    public void deleteSession(Long id) {
+        ClassEntity classEntity = classRepository.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        // Reservations reference the session, so they are removed first; the host links go with the session.
+        bookingRepository.deleteByClassEntityId(id);
+        classRepository.delete(classEntity);
+    }
+
     // Shared by create and edit: validates the references and copies every field.
     private void applySessionDetails(ClassEntity classEntity, CreateSessionDTORequest request) {
         CategoryEntity category = categoryRepository.findByName(request.category())
