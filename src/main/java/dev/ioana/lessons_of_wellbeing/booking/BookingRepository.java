@@ -13,6 +13,9 @@ public interface BookingRepository extends JpaRepository<BookingEntity, Long> {
 
     long countByStatus(ReservationStatus status);
 
+    @EntityGraph(attributePaths = { "user", "classEntity", "classEntity.category", "classEntity.guide", "classEntity.hosts" })
+    List<BookingEntity> findAllByOrderByClassEntityStartDateTimeDesc();
+
     @EntityGraph(attributePaths = { "classEntity", "classEntity.category", "classEntity.guide", "classEntity.hosts" })
     List<BookingEntity> findByUserIdOrderByClassEntityStartDateTimeDesc(Long userId);
 
