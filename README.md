@@ -66,15 +66,21 @@ The project uses a decoupled architecture, with the frontend and backend maintai
 
 ## Project Documentation
 
-Links to the project Wiki and supporting documentation will be added as they become available.
+The full project documentation is available in the project Wiki:
 
-| Topic                           | Planned content                                                                    | Link        |
-| ------------------------------- | ---------------------------------------------------------------------------------- | ----------- |
-| Getting Started                 | Environment setup, installation, and instructions for running the project locally. | To be added |
-| Agile Management & User Stories | Jira tracking, user stories, and acceptance criteria.                              | To be added |
-| Architecture                    | Frontend and backend responsibilities, application structure, and API integration. | To be added |
-| Security                        | Authentication, user and admin access, and protected reservations.                 | To be added |
-| Testing                         | Instructions for running unit and end-to-end tests.                                | To be added |
+### [Getting started](https://github.com/Alexapop/Lessons-Of-Wellbeing-from-cats-backend/wiki/Getting-Started)
+
+### [Analysis and Diagrams](https://github.com/Alexapop/Lessons-Of-Wellbeing-from-cats-backend/wiki/Analysis-and-diagrams)
+
+### [Architecture](https://github.com/Alexapop/Lessons-Of-Wellbeing-from-cats-backend/wiki/Architecture)
+
+### [Project Management & User Stories](https://github.com/Alexapop/Lessons-Of-Wellbeing-from-cats-backend/wiki/Project-Management-&-User-Stories)
+
+### [Security](https://github.com/Alexapop/Lessons-Of-Wellbeing-from-cats-backend/wiki/Security)
+
+### [API Reference](https://github.com/Alexapop/Lessons-Of-Wellbeing-from-cats-backend/wiki/API-Reference)
+
+### [Testing](https://github.com/Alexapop/Lessons-Of-Wellbeing-from-cats-backend/wiki/Testing)
 
 <table align="center">
   <thead>
