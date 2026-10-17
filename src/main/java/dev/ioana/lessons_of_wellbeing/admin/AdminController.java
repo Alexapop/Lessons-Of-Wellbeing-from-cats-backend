@@ -62,7 +62,7 @@ public class AdminController {
         return adminService.updateSession(id, request);
     }
 
-    // Removes the session (and its reservations) so it no longer appears in the calendar.
+    // Logical delete: hides the session from the calendar and cancels its confirmed reservations.
     @DeleteMapping("/sessions/{id}")
     public ResponseEntity<Void> deleteSession(@PathVariable Long id) {
         adminService.deleteSession(id);

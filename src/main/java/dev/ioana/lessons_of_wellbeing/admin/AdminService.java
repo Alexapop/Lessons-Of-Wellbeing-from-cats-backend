@@ -76,7 +76,7 @@ public class AdminService implements IAdminService {
         LocalDateTime now = LocalDateTime.now(ZoneId.of("Europe/Madrid"));
 
         return new AdminDashboardDTOResponse(
-            classRepository.count(),
+            classRepository.countActive(),
             classRepository.countByStartDateTimeAfter(now),
             bookingRepository.countByStatus(ReservationStatus.CONFIRMED),
             bookingRepository.countByStatus(ReservationStatus.CANCELLED),
@@ -160,11 +160,13 @@ public class AdminService implements IAdminService {
     @Transactional
     public void deleteSession(Long id) {
         ClassEntity classEntity = classRepository.findById(id)
+            .filter(session -> !session.isDeleted())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        // Reservations reference the session, so they are removed first; the host links go with the session.
-        bookingRepository.deleteByClassEntityId(id);
-        classRepository.delete(classEntity);
+        // Logical delete: the session leaves the calendar, its reservations stay in the history as CANCELLED.
+        bookingRepository.updateStatusForClass(id, ReservationStatus.CONFIRMED, ReservationStatus.CANCELLED);
+        classEntity.setDeleted(true);
+        classRepository.save(classEntity);
     }
 
     // Shared by create and edit: validates the references and copies every field.
