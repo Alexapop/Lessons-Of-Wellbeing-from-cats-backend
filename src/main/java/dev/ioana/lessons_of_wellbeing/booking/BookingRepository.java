@@ -13,6 +13,8 @@ public interface BookingRepository extends JpaRepository<BookingEntity, Long> {
 
     long countByStatus(ReservationStatus status);
 
+    void deleteByClassEntityId(Long classId);
+
     @EntityGraph(attributePaths = { "user", "classEntity", "classEntity.category", "classEntity.guide", "classEntity.hosts" })
     List<BookingEntity> findAllByOrderByClassEntityStartDateTimeDesc();
 
