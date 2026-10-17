@@ -6,7 +6,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,5 +43,11 @@ public class BookingController {
     @GetMapping("/me")
     public List<UserBookingDTOResponse> getMyBookings(@AuthenticationPrincipal Jwt jwt) {
         return bookingService.getMyBookings(jwt.getSubject());
+    }
+
+    // Cancels a booking of the signed-in user: the status becomes CANCELLED, the row is kept.
+    @DeleteMapping("/{id}")
+    public UserBookingDTOResponse cancelBooking(@AuthenticationPrincipal Jwt jwt, @PathVariable Long id) {
+        return bookingService.cancelBooking(jwt.getSubject(), id);
     }
 }
