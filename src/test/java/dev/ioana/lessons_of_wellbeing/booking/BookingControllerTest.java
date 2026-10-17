@@ -5,11 +5,13 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 import dev.ioana.lessons_of_wellbeing.booking.dtos.BookingDTORequest;
 import dev.ioana.lessons_of_wellbeing.booking.dtos.BookingDTOResponse;
+import dev.ioana.lessons_of_wellbeing.booking.dtos.UserBookingDTOResponse;
+import dev.ioana.lessons_of_wellbeing.classes.dtos.ClassDTOResponse;
+import dev.ioana.lessons_of_wellbeing.enums.CategoryName;
+import dev.ioana.lessons_of_wellbeing.enums.ClassLevel;
 import dev.ioana.lessons_of_wellbeing.contracts.IBookingService;
 import dev.ioana.lessons_of_wellbeing.enums.ReservationStatus;
 import dev.ioana.lessons_of_wellbeing.reservation.ReservationService;
@@ -90,6 +96,36 @@ class BookingControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"\",\"email\":\"not-an-email\",\"phone\":\"abc\"}"))
             .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(bookingService);
+    }
+
+    @Test
+    void getMyBookings_returnsBookingsOfSignedInUser() throws Exception {
+        ClassDTOResponse session = new ClassDTOResponse(1L, "Queen Mia Restorative Cat Nap Yoga & Pranayama",
+            "Restorative yoga.", ClassLevel.GENTLE_RESTORATIVE, "The Velvet Sun Lounge (Main Hall)",
+            LocalDateTime.of(2026, 10, 12, 7, 30), 75,
+            new ClassDTOResponse.CategoryResponse(1L, CategoryName.YOGA),
+            new ClassDTOResponse.GuideResponse(1L, "Aria"),
+            List.of(new ClassDTOResponse.HostResponse(1L, "Mia")), List.of());
+        when(bookingService.getMyBookings("1")).thenReturn(List.of(new UserBookingDTOResponse(
+            10L, ReservationStatus.CONFIRMED, "ginger", LocalDateTime.of(2026, 10, 1, 9, 0), session)));
+
+        mockMvc.perform(get("/api/v1/bookings/me").with(jwt().jwt(token -> token.subject("1"))))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(1))
+            .andExpect(jsonPath("$[0].id").value(10))
+            .andExpect(jsonPath("$[0].status").value("CONFIRMED"))
+            .andExpect(jsonPath("$[0].notes").value("ginger"))
+            .andExpect(jsonPath("$[0].session.location").value("The Velvet Sun Lounge (Main Hall)"))
+            .andExpect(jsonPath("$[0].session.startDateTime").value("2026-10-12T07:30:00"))
+            .andExpect(jsonPath("$[0].session.hosts[0].name").value("Mia"));
+    }
+
+    @Test
+    void getMyBookings_isUnauthorizedWithoutLogin() throws Exception {
+        mockMvc.perform(get("/api/v1/bookings/me"))
+            .andExpect(status().isUnauthorized());
 
         verifyNoInteractions(bookingService);
     }

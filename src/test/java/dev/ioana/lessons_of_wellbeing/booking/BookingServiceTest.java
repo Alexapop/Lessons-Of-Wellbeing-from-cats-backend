@@ -8,6 +8,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
@@ -22,8 +23,11 @@ import org.springframework.web.server.ResponseStatusException;
 
 import dev.ioana.lessons_of_wellbeing.booking.dtos.BookingDTORequest;
 import dev.ioana.lessons_of_wellbeing.booking.dtos.BookingDTOResponse;
+import dev.ioana.lessons_of_wellbeing.booking.dtos.UserBookingDTOResponse;
 import dev.ioana.lessons_of_wellbeing.classes.ClassEntity;
 import dev.ioana.lessons_of_wellbeing.classes.ClassRepository;
+import dev.ioana.lessons_of_wellbeing.classes.dtos.ClassDTOResponse;
+import dev.ioana.lessons_of_wellbeing.classes.mappers.ClassMapper;
 import dev.ioana.lessons_of_wellbeing.contracts.IReservationService;
 import dev.ioana.lessons_of_wellbeing.enums.ReservationStatus;
 import dev.ioana.lessons_of_wellbeing.reservation.ReservationService;
@@ -45,6 +49,9 @@ class BookingServiceTest {
 
     @Mock
     private IReservationService reservationService;
+
+    @Mock
+    private ClassMapper classMapper;
 
     @InjectMocks
     private BookingService bookingService;
@@ -134,6 +141,48 @@ class BookingServiceTest {
     @Test
     void createBooking_rejectsInvalidSubject() {
         assertThatThrownBy(() -> bookingService.createBooking("not-a-number", createRequest("Tea")))
+            .isInstanceOf(UsernameNotFoundException.class);
+    }
+
+    @Test
+    void getMyBookings_returnsBookingsOfSignedInUserWithSessionDetails() {
+        UserEntity user = new UserEntity();
+        ClassEntity classEntity = new ClassEntity();
+        BookingEntity booking = new BookingEntity();
+        booking.setClassEntity(classEntity);
+        booking.setStatus(ReservationStatus.CONFIRMED);
+        booking.setNotes("ginger");
+        ClassDTOResponse session = new ClassDTOResponse(1L, "Yoga", null, null, "Main Hall",
+            null, 75, null, null, List.of(), List.of());
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(bookingRepository.findByUserIdOrderByClassEntityStartDateTimeDesc(user.getId()))
+            .thenReturn(List.of(booking));
+        when(classMapper.toResponse(classEntity)).thenReturn(session);
+
+        List<UserBookingDTOResponse> result = bookingService.getMyBookings("1");
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).status()).isEqualTo(ReservationStatus.CONFIRMED);
+        assertThat(result.get(0).notes()).isEqualTo("ginger");
+        assertThat(result.get(0).session()).isSameAs(session);
+    }
+
+    @Test
+    void getMyBookings_returnsEmptyListWhenUserHasNoBookings() {
+        UserEntity user = new UserEntity();
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(bookingRepository.findByUserIdOrderByClassEntityStartDateTimeDesc(user.getId()))
+            .thenReturn(List.of());
+
+        assertThat(bookingService.getMyBookings("1")).isEmpty();
+    }
+
+    @Test
+    void getMyBookings_rejectsUnknownUser() {
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> bookingService.getMyBookings("1"))
             .isInstanceOf(UsernameNotFoundException.class);
     }
 

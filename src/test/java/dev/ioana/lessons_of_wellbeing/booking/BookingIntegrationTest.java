@@ -1,10 +1,12 @@
 package dev.ioana.lessons_of_wellbeing.booking;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -93,6 +95,33 @@ class BookingIntegrationTest {
             .andExpect(jsonPath("$.message").value(BookingService.ALREADY_BOOKED_MESSAGE));
 
         assertThat(bookings.findAll()).hasSize(1);
+    }
+
+    @Test
+    void getMyBookings_returnsOnlyTheBookingsOfTheSignedInUser() throws Exception {
+        mvc.perform(post("/api/v1/bookings").header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON).content(booking(KOMBUCHA_CLASS_ID, "ginger")))
+            .andExpect(status().isCreated());
+
+        UserEntity otherUser = new UserEntity();
+        otherUser.setFirstName("Other");
+        otherUser.setLastName("User");
+        otherUser.setEmail("other-user@example.com");
+        otherUser.setPassword(encoder.encode("TestPassword123!"));
+        otherUser = users.save(otherUser);
+        BookingEntity otherBooking = new BookingEntity();
+        otherBooking.setUser(otherUser);
+        otherBooking.setClassEntity(bookings.findAll().get(0).getClassEntity());
+        otherBooking.setCreatedAt(LocalDateTime.now());
+        bookings.save(otherBooking);
+
+        mvc.perform(get("/api/v1/bookings/me").header("Authorization", "Bearer " + token))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(1))
+            .andExpect(jsonPath("$[0].status").value("CONFIRMED"))
+            .andExpect(jsonPath("$[0].notes").value("ginger"))
+            .andExpect(jsonPath("$[0].session.id").value(KOMBUCHA_CLASS_ID))
+            .andExpect(jsonPath("$[0].session.category.name").value("KOMBUCHA_TEA_LOUNGE"));
     }
 
     @Test
