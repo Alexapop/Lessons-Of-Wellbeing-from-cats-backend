@@ -42,8 +42,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ApiError> handleResponseStatus(ResponseStatusException exception) {
+        String message = exception.getReason() != null
+            ? exception.getReason()
+            : "The request could not be completed.";
         return ResponseEntity.status(exception.getStatusCode())
-            .body(new ApiError(exception.getStatusCode().value(), "The request could not be completed."));
+            .body(new ApiError(exception.getStatusCode().value(), message));
     }
 
     @ExceptionHandler(Exception.class)
