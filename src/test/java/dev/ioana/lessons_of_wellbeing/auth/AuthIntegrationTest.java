@@ -146,6 +146,52 @@ class AuthIntegrationTest {
             .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:5173"));
     }
 
+    private String registration(String email, String password) {
+        return mapper.writeValueAsString(java.util.Map.of(
+            "firstName", " Ana ", "lastName", " Pop ", "email", email,
+            "phoneNumber", "+34 612 345 678", "address", " Madrid ", "password", password));
+    }
+
+    @Test
+    void registrationSavesPublicUserWithHashedPasswordAndAllowsLogin() throws Exception {
+        mvc.perform(post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON)
+                .content(registration("ANA@Example.com", "NewPassword123!")))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.email").value("ana@example.com"))
+            .andExpect(jsonPath("$.role").value("USER"))
+            .andExpect(jsonPath("$.password").doesNotExist())
+            .andExpect(jsonPath("$.accessToken").doesNotExist());
+        UserEntity saved = users.findByEmailIgnoreCase("ana@example.com").orElseThrow();
+        assertThat(saved.getFirstName()).isEqualTo("Ana");
+        assertThat(saved.getPhoneNumber()).isEqualTo("+34 612 345 678");
+        assertThat(saved.getAddress()).isEqualTo("Madrid");
+        assertThat(saved.getPassword()).isNotEqualTo("NewPassword123!");
+        assertThat(encoder.matches("NewPassword123!", saved.getPassword())).isTrue();
+        mvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"email\":\"ana@example.com\",\"password\":\"NewPassword123!\"}"))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    void registrationRejectsDuplicateEmailIgnoringCase() throws Exception {
+        mvc.perform(post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON)
+                .content(registration("ELENA@example.com", "NewPassword123!")))
+            .andExpect(status().isConflict());
+        assertThat(users.count()).isEqualTo(1);
+    }
+
+    @Test
+    void registrationRejectsInvalidInputWithoutSaving() throws Exception {
+        for (String body : new String[] {"{}", "{", registration("invalid", "NewPassword123!"),
+                registration("ana@example.com", "short"),
+                registration("ana@example.com", "é".repeat(37)),
+                registration("ana@example.com", "        ")}) {
+            mvc.perform(post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isBadRequest());
+        }
+        assertThat(users.count()).isEqualTo(1);
+    }
+
     private String token(String issuer, Instant expiresAt) {
         JwtClaimsSet claims = JwtClaimsSet.builder().issuer(issuer)
             .subject(user.getId().toString()).issuedAt(Instant.now().minusSeconds(60))

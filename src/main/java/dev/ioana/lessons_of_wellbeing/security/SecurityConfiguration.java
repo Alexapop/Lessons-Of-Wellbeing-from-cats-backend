@@ -64,7 +64,7 @@ public class SecurityConfiguration {
                 if (h2ConsoleEnabled) {
                     auth.requestMatchers("/h2-console/**").permitAll();
                 }
-                auth.requestMatchers(HttpMethod.POST, endpoint + "/auth/login").permitAll()
+                auth.requestMatchers(HttpMethod.POST, endpoint + "/auth/login", endpoint + "/auth/register").permitAll()
                     .requestMatchers(HttpMethod.GET, endpoint + "/sessions").permitAll()
                     .anyRequest().authenticated();
             });
