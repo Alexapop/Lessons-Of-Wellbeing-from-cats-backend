@@ -35,7 +35,7 @@ class AdminServiceTest {
 
     @Test
     void getDashboard_countsSessionsReservationsAndUsers() {
-        when(classRepository.count()).thenReturn(8L);
+        when(classRepository.countActive()).thenReturn(8L);
         when(classRepository.countByStartDateTimeAfter(any(LocalDateTime.class))).thenReturn(6L);
         when(bookingRepository.countByStatus(ReservationStatus.CONFIRMED)).thenReturn(3L);
         when(bookingRepository.countByStatus(ReservationStatus.CANCELLED)).thenReturn(1L);
