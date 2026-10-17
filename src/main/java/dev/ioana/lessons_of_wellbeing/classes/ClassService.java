@@ -6,8 +6,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import dev.ioana.lessons_of_wellbeing.classes.dtos.ClassDTOResponse;
 import dev.ioana.lessons_of_wellbeing.classes.mappers.ClassMapper;
@@ -40,5 +42,14 @@ public class ClassService implements IClassService {
         }
 
         return responses;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ClassDTOResponse getClassById(Long id) {
+        ClassEntity classEntity = classRepository.findWithDetailsById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        return classMapper.toResponse(classEntity);
     }
 }

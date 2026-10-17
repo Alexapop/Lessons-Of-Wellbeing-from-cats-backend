@@ -6,4 +6,6 @@ import dev.ioana.lessons_of_wellbeing.classes.dtos.ClassDTOResponse;
 
 public interface IClassService {
     List<ClassDTOResponse> getUpcomingClasses();
+
+    ClassDTOResponse getClassById(Long id);
 }
