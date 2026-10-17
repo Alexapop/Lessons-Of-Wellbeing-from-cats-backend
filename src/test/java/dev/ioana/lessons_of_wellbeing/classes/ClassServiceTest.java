@@ -1,6 +1,7 @@
 package dev.ioana.lessons_of_wellbeing.classes;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -10,6 +11,7 @@ import static org.mockito.Mockito.when;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +20,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import dev.ioana.lessons_of_wellbeing.classes.dtos.ClassDTOResponse;
 import dev.ioana.lessons_of_wellbeing.classes.mappers.ClassMapper;
@@ -71,6 +75,27 @@ class ClassServiceTest {
 
         assertThat(result).isEmpty();
         verify(classMapper, never()).toResponse(any());
+    }
+
+    @Test
+    void getClassById_returnsMappedClass() {
+        ClassEntity classEntity = new ClassEntity();
+        ClassDTOResponse response = createResponse(5L);
+
+        when(classRepository.findWithDetailsById(5L)).thenReturn(Optional.of(classEntity));
+        when(classMapper.toResponse(classEntity)).thenReturn(response);
+
+        assertThat(classService.getClassById(5L)).isEqualTo(response);
+    }
+
+    @Test
+    void getClassById_throwsNotFoundWhenClassDoesNotExist() {
+        when(classRepository.findWithDetailsById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> classService.getClassById(99L))
+            .isInstanceOf(ResponseStatusException.class)
+            .extracting(exception -> ((ResponseStatusException) exception).getStatusCode())
+            .isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     private ClassDTOResponse createResponse(Long id) {
