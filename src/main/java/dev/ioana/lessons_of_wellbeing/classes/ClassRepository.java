@@ -12,6 +12,8 @@ public interface ClassRepository extends JpaRepository<ClassEntity, Long> {
     @EntityGraph(attributePaths = { "category", "guide", "hosts" })
     List<ClassEntity> findByStartDateTimeAfter(LocalDateTime now, Sort sort);
 
+    long countByStartDateTimeAfter(LocalDateTime now);
+
     @EntityGraph(attributePaths = { "category", "guide", "hosts" })
     Optional<ClassEntity> findWithDetailsById(Long id);
 }
