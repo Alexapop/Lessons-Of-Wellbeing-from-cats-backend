@@ -28,6 +28,7 @@ import dev.ioana.lessons_of_wellbeing.user.UserRepository;
 @Service
 public class BookingService implements IBookingService {
     public static final String ALREADY_BOOKED_MESSAGE = "You have already booked this session.";
+    public static final String ALREADY_CANCELLED_MESSAGE = "This booking is already cancelled.";
 
     private final BookingRepository bookingRepository;
     private final ClassRepository classRepository;
@@ -101,16 +102,40 @@ public class BookingService implements IBookingService {
         List<UserBookingDTOResponse> responses = new ArrayList<>();
 
         for (BookingEntity booking : bookings) {
-            responses.add(new UserBookingDTOResponse(
-                booking.getId(),
-                booking.getStatus(),
-                booking.getNotes(),
-                booking.getCreatedAt(),
-                classMapper.toResponse(booking.getClassEntity())
-            ));
+            responses.add(toUserBookingResponse(booking));
         }
 
         return responses;
+    }
+
+    @Override
+    @Transactional
+    public UserBookingDTOResponse cancelBooking(String userSubject, Long bookingId) {
+        UserEntity user = findUser(userSubject);
+
+        // Bookings of other users are reported as not found, so their ids are not revealed.
+        BookingEntity booking = bookingRepository.findByIdAndUserId(bookingId, user.getId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        if (booking.getStatus() == ReservationStatus.CANCELLED) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, ALREADY_CANCELLED_MESSAGE);
+        }
+
+        // The booking is kept and only marked as cancelled.
+        booking.setStatus(ReservationStatus.CANCELLED);
+        BookingEntity saved = bookingRepository.save(booking);
+
+        return toUserBookingResponse(saved);
+    }
+
+    private UserBookingDTOResponse toUserBookingResponse(BookingEntity booking) {
+        return new UserBookingDTOResponse(
+            booking.getId(),
+            booking.getStatus(),
+            booking.getNotes(),
+            booking.getCreatedAt(),
+            classMapper.toResponse(booking.getClassEntity())
+        );
     }
 
     private UserEntity findUser(String userSubject) {

@@ -10,4 +10,6 @@ public interface IBookingService {
     BookingDTOResponse createBooking(String userSubject, BookingDTORequest request);
 
     List<UserBookingDTOResponse> getMyBookings(String userSubject);
+
+    UserBookingDTOResponse cancelBooking(String userSubject, Long bookingId);
 }
