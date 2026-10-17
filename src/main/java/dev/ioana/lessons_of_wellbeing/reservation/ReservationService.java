@@ -26,7 +26,9 @@ public class ReservationService implements IReservationService {
     @Override
     @Transactional(readOnly = true)
     public ReservationDTOResponse validateReservation(Long classId, ReservationDTORequest request) {
+        // Deleted sessions can no longer be booked.
         ClassEntity classEntity = classRepository.findById(classId)
+            .filter(session -> !session.isDeleted())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
         String notes = request.notes() == null ? "" : request.notes().trim();
