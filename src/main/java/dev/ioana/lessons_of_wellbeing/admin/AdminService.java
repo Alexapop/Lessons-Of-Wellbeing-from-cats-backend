@@ -140,6 +140,24 @@ public class AdminService implements IAdminService {
     @Override
     @Transactional
     public ClassDTOResponse createSession(CreateSessionDTORequest request) {
+        ClassEntity classEntity = new ClassEntity();
+        applySessionDetails(classEntity, request);
+
+        return classMapper.toResponse(classRepository.save(classEntity));
+    }
+
+    @Override
+    @Transactional
+    public ClassDTOResponse updateSession(Long id, CreateSessionDTORequest request) {
+        ClassEntity classEntity = classRepository.findWithDetailsById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        applySessionDetails(classEntity, request);
+
+        return classMapper.toResponse(classRepository.save(classEntity));
+    }
+
+    // Shared by create and edit: validates the references and copies every field.
+    private void applySessionDetails(ClassEntity classEntity, CreateSessionDTORequest request) {
         CategoryEntity category = categoryRepository.findByName(request.category())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, INVALID_CATEGORY_MESSAGE));
 
@@ -152,7 +170,6 @@ public class AdminService implements IAdminService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, INVALID_HOSTS_MESSAGE);
         }
 
-        ClassEntity classEntity = new ClassEntity();
         classEntity.setTitle(request.title().trim());
         classEntity.setDescription(request.description().trim());
         classEntity.setCategory(category);
@@ -162,7 +179,5 @@ public class AdminService implements IAdminService {
         classEntity.setDurationMinutes(request.durationMinutes());
         classEntity.setGuide(guide);
         classEntity.setHosts(new HashSet<>(hosts));
-
-        return classMapper.toResponse(classRepository.save(classEntity));
     }
 }

@@ -16,4 +16,6 @@ public interface IAdminService {
     SessionOptionsDTOResponse getSessionOptions();
 
     ClassDTOResponse createSession(CreateSessionDTORequest request);
+
+    ClassDTOResponse updateSession(Long id, CreateSessionDTORequest request);
 }
