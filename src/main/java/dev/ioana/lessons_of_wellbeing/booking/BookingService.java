@@ -2,6 +2,8 @@ package dev.ioana.lessons_of_wellbeing.booking;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -12,8 +14,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 import dev.ioana.lessons_of_wellbeing.booking.dtos.BookingDTORequest;
 import dev.ioana.lessons_of_wellbeing.booking.dtos.BookingDTOResponse;
+import dev.ioana.lessons_of_wellbeing.booking.dtos.UserBookingDTOResponse;
 import dev.ioana.lessons_of_wellbeing.classes.ClassEntity;
 import dev.ioana.lessons_of_wellbeing.classes.ClassRepository;
+import dev.ioana.lessons_of_wellbeing.classes.mappers.ClassMapper;
 import dev.ioana.lessons_of_wellbeing.contracts.IBookingService;
 import dev.ioana.lessons_of_wellbeing.contracts.IReservationService;
 import dev.ioana.lessons_of_wellbeing.enums.ReservationStatus;
@@ -29,17 +33,20 @@ public class BookingService implements IBookingService {
     private final ClassRepository classRepository;
     private final UserRepository userRepository;
     private final IReservationService reservationService;
+    private final ClassMapper classMapper;
 
     public BookingService(
         BookingRepository bookingRepository,
         ClassRepository classRepository,
         UserRepository userRepository,
-        IReservationService reservationService
+        IReservationService reservationService,
+        ClassMapper classMapper
     ) {
         this.bookingRepository = bookingRepository;
         this.classRepository = classRepository;
         this.userRepository = userRepository;
         this.reservationService = reservationService;
+        this.classMapper = classMapper;
     }
 
     @Override
@@ -83,6 +90,27 @@ public class BookingService implements IBookingService {
             saved.getNotes(),
             saved.getCreatedAt()
         );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserBookingDTOResponse> getMyBookings(String userSubject) {
+        UserEntity user = findUser(userSubject);
+
+        List<BookingEntity> bookings = bookingRepository.findByUserIdOrderByClassEntityStartDateTimeDesc(user.getId());
+        List<UserBookingDTOResponse> responses = new ArrayList<>();
+
+        for (BookingEntity booking : bookings) {
+            responses.add(new UserBookingDTOResponse(
+                booking.getId(),
+                booking.getStatus(),
+                booking.getNotes(),
+                booking.getCreatedAt(),
+                classMapper.toResponse(booking.getClassEntity())
+            ));
+        }
+
+        return responses;
     }
 
     private UserEntity findUser(String userSubject) {
