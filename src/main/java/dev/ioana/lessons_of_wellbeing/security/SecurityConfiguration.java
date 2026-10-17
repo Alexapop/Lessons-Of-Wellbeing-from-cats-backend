@@ -66,6 +66,8 @@ public class SecurityConfiguration {
                 }
                 auth.requestMatchers(HttpMethod.POST, endpoint + "/auth/login", endpoint + "/auth/register").permitAll()
                     .requestMatchers(HttpMethod.GET, endpoint + "/sessions").permitAll()
+                    // Admin area: the "roles" claim of the JWT must contain ADMIN.
+                    .requestMatchers(endpoint + "/admin/**").hasRole("ADMIN")
                     .anyRequest().authenticated();
             });
 
