@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -120,6 +121,49 @@ class BookingControllerTest {
             .andExpect(jsonPath("$[0].session.location").value("The Velvet Sun Lounge (Main Hall)"))
             .andExpect(jsonPath("$[0].session.startDateTime").value("2026-10-12T07:30:00"))
             .andExpect(jsonPath("$[0].session.hosts[0].name").value("Mia"));
+    }
+
+    @Test
+    void cancelBooking_returnsCancelledBooking() throws Exception {
+        ClassDTOResponse session = new ClassDTOResponse(1L, "Queen Mia Restorative Cat Nap Yoga & Pranayama",
+            "Restorative yoga.", ClassLevel.GENTLE_RESTORATIVE, "The Velvet Sun Lounge (Main Hall)",
+            LocalDateTime.of(2026, 10, 12, 7, 30), 75,
+            new ClassDTOResponse.CategoryResponse(1L, CategoryName.YOGA),
+            new ClassDTOResponse.GuideResponse(1L, "Aria"),
+            List.of(new ClassDTOResponse.HostResponse(1L, "Mia")), List.of());
+        when(bookingService.cancelBooking("1", 10L)).thenReturn(new UserBookingDTOResponse(
+            10L, ReservationStatus.CANCELLED, "ginger", LocalDateTime.of(2026, 10, 1, 9, 0), session));
+
+        mockMvc.perform(delete("/api/v1/bookings/10").with(jwt().jwt(token -> token.subject("1"))))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(10))
+            .andExpect(jsonPath("$.status").value("CANCELLED"));
+    }
+
+    @Test
+    void cancelBooking_returnsNotFoundForUnknownBooking() throws Exception {
+        when(bookingService.cancelBooking("1", 99L)).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        mockMvc.perform(delete("/api/v1/bookings/99").with(jwt().jwt(token -> token.subject("1"))))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void cancelBooking_returnsConflictWhenAlreadyCancelled() throws Exception {
+        when(bookingService.cancelBooking("1", 10L))
+            .thenThrow(new ResponseStatusException(HttpStatus.CONFLICT, BookingService.ALREADY_CANCELLED_MESSAGE));
+
+        mockMvc.perform(delete("/api/v1/bookings/10").with(jwt().jwt(token -> token.subject("1"))))
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.message").value(BookingService.ALREADY_CANCELLED_MESSAGE));
+    }
+
+    @Test
+    void cancelBooking_isUnauthorizedWithoutLogin() throws Exception {
+        mockMvc.perform(delete("/api/v1/bookings/10"))
+            .andExpect(status().isUnauthorized());
+
+        verifyNoInteractions(bookingService);
     }
 
     @Test

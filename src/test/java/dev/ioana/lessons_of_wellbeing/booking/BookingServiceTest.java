@@ -186,6 +186,68 @@ class BookingServiceTest {
             .isInstanceOf(UsernameNotFoundException.class);
     }
 
+    @Test
+    void cancelBooking_marksBookingAsCancelledAndSavesIt() {
+        UserEntity user = new UserEntity();
+        ClassEntity classEntity = new ClassEntity();
+        BookingEntity booking = new BookingEntity();
+        booking.setClassEntity(classEntity);
+        booking.setStatus(ReservationStatus.CONFIRMED);
+        ClassDTOResponse session = new ClassDTOResponse(1L, "Yoga", null, null, "Main Hall",
+            null, 75, null, null, List.of(), List.of());
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(bookingRepository.findByIdAndUserId(10L, user.getId())).thenReturn(Optional.of(booking));
+        when(bookingRepository.save(booking)).thenReturn(booking);
+        when(classMapper.toResponse(classEntity)).thenReturn(session);
+
+        UserBookingDTOResponse response = bookingService.cancelBooking("1", 10L);
+
+        verify(bookingRepository).save(booking);
+        assertThat(booking.getStatus()).isEqualTo(ReservationStatus.CANCELLED);
+        assertThat(response.status()).isEqualTo(ReservationStatus.CANCELLED);
+        assertThat(response.session()).isSameAs(session);
+    }
+
+    @Test
+    void cancelBooking_throwsNotFoundForBookingOfAnotherUserOrUnknownBooking() {
+        UserEntity user = new UserEntity();
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(bookingRepository.findByIdAndUserId(99L, user.getId())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> bookingService.cancelBooking("1", 99L))
+            .isInstanceOf(ResponseStatusException.class)
+            .extracting(exception -> ((ResponseStatusException) exception).getStatusCode())
+            .isEqualTo(HttpStatus.NOT_FOUND);
+        verify(bookingRepository, never()).save(any());
+    }
+
+    @Test
+    void cancelBooking_rejectsAlreadyCancelledBooking() {
+        UserEntity user = new UserEntity();
+        BookingEntity booking = new BookingEntity();
+        booking.setStatus(ReservationStatus.CANCELLED);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(bookingRepository.findByIdAndUserId(10L, user.getId())).thenReturn(Optional.of(booking));
+
+        assertThatThrownBy(() -> bookingService.cancelBooking("1", 10L))
+            .isInstanceOf(ResponseStatusException.class)
+            .satisfies(exception -> {
+                ResponseStatusException error = (ResponseStatusException) exception;
+                assertThat(error.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+                assertThat(error.getReason()).isEqualTo(BookingService.ALREADY_CANCELLED_MESSAGE);
+            });
+        verify(bookingRepository, never()).save(any());
+    }
+
+    @Test
+    void cancelBooking_rejectsUnknownUser() {
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> bookingService.cancelBooking("1", 10L))
+            .isInstanceOf(UsernameNotFoundException.class);
+    }
+
     private BookingDTORequest createRequest(String notes) {
         return new BookingDTORequest(2L, "Elena Vance", "elena@example.com", "+34 612 345 678", notes);
     }

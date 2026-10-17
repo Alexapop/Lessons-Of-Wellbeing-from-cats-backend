@@ -1,6 +1,7 @@
 package dev.ioana.lessons_of_wellbeing.booking;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -122,6 +123,54 @@ class BookingIntegrationTest {
             .andExpect(jsonPath("$[0].notes").value("ginger"))
             .andExpect(jsonPath("$[0].session.id").value(KOMBUCHA_CLASS_ID))
             .andExpect(jsonPath("$[0].session.category.name").value("KOMBUCHA_TEA_LOUNGE"));
+    }
+
+    @Test
+    void cancelBooking_savesCancelledStatusAndKeepsTheBooking() throws Exception {
+        mvc.perform(post("/api/v1/bookings").header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON).content(booking(YOGA_CLASS_ID, "")))
+            .andExpect(status().isCreated());
+        Long bookingId = bookings.findAll().get(0).getId();
+
+        mvc.perform(delete("/api/v1/bookings/" + bookingId).header("Authorization", "Bearer " + token))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("CANCELLED"));
+
+        assertThat(bookings.findById(bookingId)).get()
+            .extracting(BookingEntity::getStatus).isEqualTo(ReservationStatus.CANCELLED);
+
+        mvc.perform(get("/api/v1/bookings/me").header("Authorization", "Bearer " + token))
+            .andExpect(jsonPath("$.length()").value(1))
+            .andExpect(jsonPath("$[0].status").value("CANCELLED"));
+
+        mvc.perform(delete("/api/v1/bookings/" + bookingId).header("Authorization", "Bearer " + token))
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.message").value(BookingService.ALREADY_CANCELLED_MESSAGE));
+    }
+
+    @Test
+    void cancelBooking_returnsNotFoundForBookingOfAnotherUser() throws Exception {
+        UserEntity otherUser = new UserEntity();
+        otherUser.setFirstName("Other");
+        otherUser.setLastName("User");
+        otherUser.setEmail("other-cancel@example.com");
+        otherUser.setPassword(encoder.encode("TestPassword123!"));
+        otherUser = users.save(otherUser);
+
+        mvc.perform(post("/api/v1/bookings").header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON).content(booking(YOGA_CLASS_ID, "")))
+            .andExpect(status().isCreated());
+        BookingEntity ownBooking = bookings.findAll().get(0);
+        BookingEntity otherBooking = new BookingEntity();
+        otherBooking.setUser(otherUser);
+        otherBooking.setClassEntity(ownBooking.getClassEntity());
+        otherBooking.setCreatedAt(LocalDateTime.now());
+        otherBooking = bookings.save(otherBooking);
+
+        mvc.perform(delete("/api/v1/bookings/" + otherBooking.getId()).header("Authorization", "Bearer " + token))
+            .andExpect(status().isNotFound());
+
+        assertThat(otherBooking.getStatus()).isEqualTo(ReservationStatus.CONFIRMED);
     }
 
     @Test
