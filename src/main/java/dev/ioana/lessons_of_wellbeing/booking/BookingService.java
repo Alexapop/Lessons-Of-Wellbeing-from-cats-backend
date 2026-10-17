@@ -21,6 +21,7 @@ import dev.ioana.lessons_of_wellbeing.classes.mappers.ClassMapper;
 import dev.ioana.lessons_of_wellbeing.contracts.IBookingService;
 import dev.ioana.lessons_of_wellbeing.contracts.IReservationService;
 import dev.ioana.lessons_of_wellbeing.enums.ReservationStatus;
+import dev.ioana.lessons_of_wellbeing.enums.Role;
 import dev.ioana.lessons_of_wellbeing.reservation.dtos.ReservationDTOResponse;
 import dev.ioana.lessons_of_wellbeing.user.UserEntity;
 import dev.ioana.lessons_of_wellbeing.user.UserRepository;
@@ -29,6 +30,7 @@ import dev.ioana.lessons_of_wellbeing.user.UserRepository;
 public class BookingService implements IBookingService {
     public static final String ALREADY_BOOKED_MESSAGE = "You have already booked this session.";
     public static final String ALREADY_CANCELLED_MESSAGE = "This booking is already cancelled.";
+    public static final String ADMIN_CANNOT_BOOK_MESSAGE = "Admins cannot book sessions.";
 
     private final BookingRepository bookingRepository;
     private final ClassRepository classRepository;
@@ -54,6 +56,11 @@ public class BookingService implements IBookingService {
     @Transactional
     public BookingDTOResponse createBooking(String userSubject, BookingDTORequest request) {
         UserEntity user = findUser(userSubject);
+
+        // Only members book sessions; admins manage them.
+        if (user.getRole() == Role.ADMIN) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ADMIN_CANNOT_BOOK_MESSAGE);
+        }
 
         // Reuses the reservation rules: 404 for unknown sessions, notes required for Kombucha/Tea.
         ReservationDTOResponse validated =
