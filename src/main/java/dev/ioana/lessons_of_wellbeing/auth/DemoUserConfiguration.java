@@ -15,7 +15,7 @@ import dev.ioana.lessons_of_wellbeing.user.UserEntity;
 import dev.ioana.lessons_of_wellbeing.user.UserRepository;
 
 @Configuration
-@Profile("h2")
+@Profile({"h2", "mysql"})
 public class DemoUserConfiguration {
     @Bean
     public CommandLineRunner createDemoUser(UserRepository repository, PasswordEncoder encoder,
